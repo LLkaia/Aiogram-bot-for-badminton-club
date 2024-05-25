@@ -78,6 +78,15 @@ async def sql_delete_command(data, gym):
     cur.execute(f'DELETE FROM {gym} WHERE daytime == ?', (data,))
     base.commit()
 
+async def remove_empty_sessions(gym):
+    cur.execute(f'DELETE FROM {gym} WHERE memb = "" AND queue = ""')
+    base.commit()
+
+async def get_count_of_sessions_per_day(gym):
+    result = cur.execute(f'SELECT daytime, COUNT(daytime) FROM {gym} GROUP BY daytime').fetchall()
+    count_per_day = {day: count for day, count in result}
+    return count_per_day
+
 async def add_to_queue(userid, username, when, gym, count):
     queue = cur.execute(f'SELECT queue FROM {gym} WHERE daytime == ?', (when,)).fetchone()[0]
     members = cur.execute(f'SELECT memb FROM {gym} WHERE daytime == ?', (when,)).fetchone()[0]
